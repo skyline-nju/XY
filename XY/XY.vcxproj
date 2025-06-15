@@ -127,9 +127,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="comn.cpp" />
+    <ClCompile Include="io2D.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="comn.h" />
+    <ClInclude Include="io2D.h" />
     <ClInclude Include="lattice_2.h" />
     <ClInclude Include="rand.h" />
     <ClInclude Include="xy_2.h" />

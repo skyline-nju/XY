@@ -1,8 +1,5 @@
 #pragma once
-#include <cmath>
-
-const double PI = 3.141592653589793;
-
+#include "comn.h"
 
 template <typename TLattice>
 class XY_2 {
@@ -20,8 +17,7 @@ public:
   template <typename TRan>
   void update(TRan& myran);
 
-  void cal_order_para(double& v_module, double& v_angle);
-
+  void cal_order_para(double& v_module, double& v_angle) const;
 
 private:
   TLattice lat_;
@@ -31,7 +27,6 @@ private:
 
   double* theta_;
   double* tau_;
-  
 };
 
 
@@ -89,7 +84,7 @@ void XY_2<TLattice>::update(TRan& myran) {
 }
 
 template<typename TLattice>
-void XY_2<TLattice>::cal_order_para(double& v_module, double& v_angle) {
+void XY_2<TLattice>::cal_order_para(double& v_module, double& v_angle) const {
   double vx = 0;
   double vy = 0;
   for (size_t i = 0; i < N_; i++) {

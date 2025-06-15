@@ -18,6 +18,12 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="comn.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="io2D.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lattice_2.h">
@@ -27,6 +33,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="rand.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="comn.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="io2D.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
