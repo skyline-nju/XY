@@ -7,10 +7,8 @@ public:
   XY_2(int Lx, int Ly, double T, double h, double J=1.0);
   ~XY_2();
 
-  template <typename TRan>
-  void ini_rand(TRan& myran);
-
-  void ini_ordered(double theta0 = 0.);
+  template <typename TSnap, typename TRan>
+  void ini(const std::string& ini_mode, const TSnap& snap, TRan& myran, double theta0=0.);
 
   void align(size_t i, size_t j);
 
@@ -18,6 +16,14 @@ public:
   void update(TRan& myran);
 
   void cal_order_para(double& v_module, double& v_angle) const;
+
+  template <typename TFloat>
+  void get_theta(TFloat* theta) const;
+
+  template <typename TFloat>
+  void get_pos(TFloat* pos) const;
+
+  size_t get_n() const { return N_; }
 
 private:
   TLattice lat_;
@@ -44,21 +50,26 @@ XY_2<TLattice>::~XY_2() {
   delete[] tau_;
 }
 
-template<typename TLattice>
-template<typename TRan>
-void XY_2<TLattice>::ini_rand(TRan& myran) {
-  for (size_t i = 0; i < N_; i++) {
-    theta_[i] = myran.doub() * 2 * PI;
-  }
-}
 
 template<typename TLattice>
-void XY_2<TLattice>::ini_ordered(double theta0) {
-  for (size_t i = 0; i < N_; i++) {
-    theta_[i] = theta0;
+template<typename TSnap, typename TRan>
+void XY_2<TLattice>::ini(const std::string& ini_mode, const TSnap& snap, TRan& myran, double theta0) {
+  if (ini_mode == "rand") {
+    for (size_t i = 0; i < N_; i++) {
+      theta_[i] = (myran.doub() - 0.5) * 2 * PI;
+    }
+  } else if (ini_mode == "ordered") {
+    for (size_t i = 0; i < N_; i++) {
+      theta_[i] = theta0;
+    }
+  } else if (ini_mode == "resume") {
+    double* pos = nullptr;
+    snap.read_last_frame(pos, theta_, N_);
+  } else {
+    std::cout << "Error, ini_mode must be one of rand, ordered and resume" << std::endl;
+    exit(1);
   }
 }
-
 
 template<typename TLattice>
 void XY_2<TLattice>::align(size_t i, size_t j) {
@@ -79,6 +90,11 @@ void XY_2<TLattice>::update(TRan& myran) {
   // update theta
   for (size_t i = 0; i < N_; i++) {
     theta_[i] += (J_h_ * tau_[i] + sqrt_24_T_h_ * (myran.doub() - 0.5));
+    if (theta_[i] >= PI) {
+      theta_[i] -= 2 * PI;
+    } else if (theta_[i] < -PI) {
+      theta_[i] += 2 * PI;
+    }
     tau_[i] = 0.;
   }
 }
@@ -96,4 +112,30 @@ void XY_2<TLattice>::cal_order_para(double& v_module, double& v_angle) const {
   vy /= N_;
   v_module = std::sqrt(vx * vx + vy * vy);
   v_angle = std::atan2(vy, vx);
+}
+
+template<typename TLattice>
+template<typename TFloat>
+void XY_2<TLattice>::get_theta(TFloat* theta) const {
+  for (size_t i = 0; i < N_; i++) {
+    theta[i] = theta_[i];
+  }
+}
+
+template<typename TLattice>
+template<typename TFloat>
+void XY_2<TLattice>::get_pos(TFloat* pos) const {
+  int Lx = lat_.get_Lx();
+  int Ly = lat_.get_Ly();
+
+  for (int row = 0; row < Ly; row++) {
+    TFloat y = row + 0.5 - Ly / 2.;
+    for (int col = 0; col < Lx; col++) {
+      size_t idx = col + size_t(row) * Lx;
+      TFloat x = col + 0.5 - Lx / 2.;
+      pos[3 * idx] = x;
+      pos[3 * idx + 1] = y;
+      pos[3 * idx + 2] = 0.;
+    }
+  }
 }

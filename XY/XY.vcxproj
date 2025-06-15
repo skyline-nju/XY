@@ -128,11 +128,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="comn.cpp" />
+    <ClCompile Include="gsd.c" />
     <ClCompile Include="io2D.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="comn.h" />
+    <ClInclude Include="gsd.h" />
     <ClInclude Include="io2D.h" />
     <ClInclude Include="lattice_2.h" />
     <ClInclude Include="rand.h" />

@@ -96,3 +96,74 @@ io::OrderParaExporter::OrderParaExporter(const std::string& outfile, int start, 
 }
 
 
+io::Snap_GSD_2::Snap_GSD_2(const std::string& filename, int n_step, int sep, int& start,
+                           double h, double log_sep, int Lx, int Ly, const std::string& open_flag)
+  : ExporterBase(n_step, sep, start) {
+  unsigned int version = gsd_make_version(1, 4);
+  handle_ = new gsd_handle;
+  if (open_flag != "resume") {
+    int flag = gsd_create(filename.c_str(), "cpp", "hoomd", version);
+    if (flag != 0) {
+      std::cout << "Error when create " << filename << "; state=" << flag << std::endl;
+      exit(1);
+    }
+    flag = gsd_open(handle_, filename.c_str(), GSD_OPEN_READWRITE);
+    if (flag != 0) {
+      std::cout << "Error when open " << filename << "; state=" << flag << std::endl;
+      exit(1);
+    }
+
+    float box[6] = { Lx, Ly, 1, 0, 0, 0 };
+    gsd_write_chunk(handle_, "configuration/box", GSD_TYPE_FLOAT, 6, 1, 0, box);
+
+  } else {
+    int flag = gsd_open(handle_, filename.c_str(), GSD_OPEN_READWRITE);
+    if (flag != 0) {
+      std::cout << "Error when open " << filename << "; state=" << flag << std::endl;
+      exit(1);
+    } else {
+      std::cout << "open " << filename << std::endl;
+    }
+  }
+
+  start = reset_start_time_step();
+  if (log_sep > 0) {
+    set_log_scale_frames(h, log_sep);
+  }
+}
+
+
+uint64_t io::Snap_GSD_2::get_time_step() {
+  uint64_t step;
+  size_t n_frame = gsd_get_nframes(handle_);
+  if (n_frame == 0) {
+    step = sep_;
+  } else {
+    const gsd_index_entry* chunk = gsd_find_chunk(handle_, n_frame - 1, "configuration/step");
+    if (chunk) {
+      gsd_read_chunk(handle_, &step, chunk);
+      step += sep_;
+    } else {
+      step = sep_;
+    }
+  }
+  return step;
+}
+
+int io::Snap_GSD_2::reset_start_time_step() {
+  size_t n_frame = gsd_get_nframes(handle_);
+  if (n_frame == 0) {
+    start_ = 0;
+  } else {
+    const gsd_index_entry* chunk = gsd_find_chunk(handle_, n_frame - 1, "configuration/step");
+    if (chunk) {
+      uint64_t last_step;
+      gsd_read_chunk(handle_, &last_step, chunk);
+      start_ = last_step;
+    } else {
+      std::cout << "Warning, failed to read the time step of the last frame" << std::endl;
+      start_ = 0;
+    }
+  }
+  return start_;
+}

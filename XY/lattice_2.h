@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "comn.h"
 
 class SquareLattice_2 {
 public:
@@ -7,6 +8,9 @@ public:
 
   template <typename BiFunc>
   void for_each_pair(BiFunc pair_force) const;
+
+  int get_Lx() const { return Lx_; }
+  int get_Ly() const { return Ly_; }
 
 private:
   int Lx_;
