@@ -53,7 +53,7 @@ def get_untangled_angles(ux, uy, sigma=0):
     return theta_untangled
 
 
-def get_theta_fields(fname, i_frame=-1):
+def get_theta_fields(fname, i_frame=-1, ret_untangled=True):
     with fl.open(name=fname, mode="r") as fin:
         nframes = fin.nframes
         if i_frame < 0:
@@ -61,28 +61,32 @@ def get_theta_fields(fname, i_frame=-1):
         box = fin.read_chunk(frame=0, name="configuration/box")
         Lx, Ly = int(box[0]), int(box[1])
         theta = fin.read_chunk(frame=i_frame, name="particles/charge").reshape(Ly, Lx)
+    if ret_untangled:
         theta_untangled = untangle_2D(theta)
-    return theta, theta_untangled
+        return theta, theta_untangled
+    else:
+        return theta
 
 
 if __name__ == "__main__":
-    folder = "/mnt/sda/LatticeXY/KM/snap"
-    fname = f"{folder}/L512_512_T0.1_s0.2_h0.1_S1000.gsd"
+    # folder = "/mnt/sda/LatticeXY/KM/snap"
+    # fname = f"{folder}/L1024_1024_T0.1_s0.25_h0.1_S3002.gsd"
 
+    folder = "/mnt/sda/LatticeXY/KM/L4096"
+    fname = f"{folder}/L4096_4096_T0.1_s0.25_h0.1_S3000.gsd"
     with fl.open(name=fname, mode="r") as fin:
         nframes = fin.nframes
         print("found", nframes, "frames")
         box = fin.read_chunk(frame=0, name="configuration/box")
         Lx, Ly = int(box[0]), int(box[1])
         
-        i_frame = nframes - 1
+        for i_frame in range(nframes-3, nframes):
+            theta = fin.read_chunk(frame=i_frame, name="particles/charge").reshape(Ly, Lx)
+            theta_untangled = untangle_2D(theta)
 
-        theta = fin.read_chunk(frame=i_frame, name="particles/charge").reshape(Ly, Lx)
-        theta_untangled = untangle_2D(theta)
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5), constrained_layout=True)
+            ax1.imshow(theta, origin="lower", cmap="hsv")
+            ax2.imshow(theta_untangled, origin="lower")
 
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4), constrained_layout=True)
-        ax1.imshow(theta, origin="lower", cmap="hsv")
-        ax2.imshow(theta_untangled, origin="lower")
-
-        plt.show()
-        plt.close()
+            plt.show()
+            plt.close()
