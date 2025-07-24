@@ -15,10 +15,10 @@ int main(int argc, char* argv[]) {
 #ifdef _MSC_VER
   double T = 0.4;
   double h = 0.1;
-  unsigned long long seed = 1234;
+  unsigned long long seed = 1000;
   int snap_dt = 100;
   int n_step = 10000;
-  std::string ini_mode = "resume";
+  std::string ini_mode = "rand";
   int proc_nx = 2;
   int proc_ny = 2;
 #else

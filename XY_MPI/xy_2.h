@@ -32,6 +32,8 @@ public:
   size_t get_n() const { return N_; }
   size_t get_gl_n() const { return gl_N_; }
 
+  bool is_root() const { return lat_.is_root(); }
+
 private:
   TLattice lat_;
   size_t N_;
@@ -71,24 +73,21 @@ void XY_2<TLattice>::ini(const std::string& ini_mode, const TSnap& snap,
                          TRan& myran, double theta0) {
   double* gl_theta = nullptr;
 
-  if (lat_.is_root()) {
+  if (is_root()) {
     gl_theta = new double[gl_N_];
-    if (ini_mode == "rand") {
-      for (size_t i = 0; i < gl_N_; i++) {
-        gl_theta[i] = (myran.doub() - 0.5) * 2 * PI;
-      }
-    } else if (ini_mode == "ordered") {
-      for (size_t i = 0; i < gl_N_; i++) {
-        gl_theta[i] = theta0;
-      }
-    } else if (ini_mode == "resume") {
-      double* pos = nullptr;
+
+    if (ini_mode == "resume") {
       snap.read_last_frame(gl_theta, gl_N_);
+    } else if (ini_mode == "rand") {
+      get_rand_fields(gl_theta, gl_N_, myran, -PI, PI);
+    } else if (ini_mode == "ordered") {
+      get_uniform_fields(gl_theta, gl_N_, theta0);
     } else {
       std::cout << "Error, ini_mode must be one of rand, ordered and resume" << std::endl;
       exit(1);
     }
   }
+
   lat_.scatter_fields(gl_theta, theta_);
   delete[] gl_theta;
 }

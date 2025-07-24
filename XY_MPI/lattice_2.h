@@ -85,3 +85,35 @@ void SquareLatticePadded_2::for_each_real_site(UniFunc func) const {
     }
   }
 }
+
+/*****************************************************************************
+*         Functions to initialize fields
+*****************************************************************************/
+
+template <typename T, typename TRan>
+void get_rand_fields(T* f, size_t n, TRan& myran,
+                     double f_a, double f_b) {
+  double df = f_b - f_a;
+  for (size_t i = 0; i < n; i++) {
+    f[i] = f_a + df * myran.doub();
+  }
+}
+
+template <typename T>
+void get_uniform_fields(T* f, size_t n, T f0) {
+  for (size_t i = 0; i < n; i++) {
+    f[i] = f0;
+  }
+}
+
+template <typename T, typename TRan>
+void get_bimodal_fields(T* f, size_t n, TRan& myran, T f1, T f2) {
+  size_t half_n = n / 2;
+  for (size_t i = 0; i < half_n; i++) {
+    f[i] = f1;
+  }
+  for (size_t i = half_n; i < n; i++) {
+    f[i] = f2;
+  }
+  shuffle(f, n, myran);
+}
