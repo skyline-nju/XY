@@ -70,43 +70,15 @@ SquareLatticePadded_2::~SquareLatticePadded_2(){
 }
 
 
-void SquareLatticePadded_2::scatter_fields(double* gl_f, double* my_f) const {
+void SquareLatticePadded_2::scatter_fields(const double* gl_f, double* my_f) const {
   int root = 0;
   int real_beg = get_idx(real_beg_x_, real_beg_y_);
   
-  //if (is_root()) {
-  //  for (int row = 0; row < gl_Ly_; row++) {
-  //    for (int col = 0; col < gl_Lx_; col++) {
-  //      int idx = col + row * gl_Lx_;
-  //      std::cout << gl_f[idx] << " ";
-  //    }
-  //    std::cout << std::endl;
-  //  }
-
-  //  std::cout << "dis: ";
-  //  for (int i = 0; i < 4; i++) {
-  //    std::cout << displs_[i] << "\t";
-  //  }
-  //  std::cout << std::endl;
-  //}
-
   MPI_Scatterv(gl_f, counts_, displs_, gl_block_type_,
     &my_f[real_beg], 1, my_block_type_, root, get_communicator());
-
-
-  //if (get_my_rank() == 2) {
-  //  for (int row = 0; row < Ly_; row++) {
-  //    for (int col = 0; col < Lx_; col++) {
-  //      int idx = col + row * Lx_;
-  //      std::cout << my_f[idx] << " ";
-  //    }
-  //    std::cout << std::endl;
-  //  }
-  //}
-
 }
 
-void SquareLatticePadded_2::gather_fields(double* gl_f, double* my_f) const {
+void SquareLatticePadded_2::gather_fields(double* gl_f, const double* my_f) const {
   int root = 0;
   int real_beg = get_idx(real_beg_x_, real_beg_y_);
   MPI_Gatherv(&my_f[real_beg], 1, my_block_type_,

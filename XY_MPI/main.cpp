@@ -16,9 +16,9 @@ int main(int argc, char* argv[]) {
   double T = 0.4;
   double h = 0.1;
   unsigned long long seed = 1000;
-  int snap_dt = 100;
-  int n_step = 10000;
-  std::string ini_mode = "rand";
+  int snap_dt = 1000;
+  int n_step = 300000;
+  std::string ini_mode = "resume";
   int proc_nx = 2;
   int proc_ny = 2;
 #else
@@ -69,7 +69,9 @@ int main(int argc, char* argv[]) {
   
   {
     // initialize spins
-    Ran myran(seed);
+    int my_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    Ran myran(seed + my_rank);
     XY_2<SquareLatticePadded_2> XY_spins(Lx, Ly, proc_nx, proc_ny,
                                          MPI_COMM_WORLD, T, h);
     XY_spins.ini(ini_mode, gsd, myran);

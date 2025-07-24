@@ -20,9 +20,9 @@ public:
   template <typename UniFunc>
   void for_each_real_site(UniFunc func) const;
 
-  void scatter_fields(double* gl_f, double* my_f) const;
+  void scatter_fields(const double* gl_f, double* my_f) const;
 
-  void gather_fields(double* gl_f, double* my_f) const;
+  void gather_fields(double* gl_f, const double* my_f) const;
 
   int get_gl_Lx() const { return gl_Lx_; }
   int get_gl_Ly() const { return gl_Ly_; }

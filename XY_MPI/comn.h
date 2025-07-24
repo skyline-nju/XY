@@ -46,4 +46,13 @@ void num_to_str(const T &num, std::string str) {
   ss >> str;
 }
 
+template <typename T>
+void tangle_theta(T& theta) {
+  if (theta > PI) {
+    theta -= 2 * PI;
+  } else if (theta <= -PI) {
+    theta += 2 * PI;
+  }
+}
+
 #endif
