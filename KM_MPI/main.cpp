@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
   double T = 0.3;
   double h = 0.1;
   double sigma = 0.2;
-  unsigned long long seed = 3000;
+  unsigned long long seed = 1001;
   int snap_dt = 100;
   int n_step = 10000;
   std::string ini_mode = "resume";

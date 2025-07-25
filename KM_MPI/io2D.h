@@ -119,7 +119,7 @@ namespace io {
     int reset_start_time_step();
 
     template <typename TSpins>
-    void dump(int i_step, const TSpins& spins);
+    void dump(int i_step, const TSpins& spins, bool flag_out_pos=false);
 
     template <typename TFloat>
     void read(int i_frame, int n, TFloat* theta_out, TFloat* omega_out=nullptr) const;
@@ -133,7 +133,7 @@ namespace io {
 
 
   template<typename TSpins>
-  void Snap_GSD_2::dump(int i_step, const TSpins& spins) {
+  void Snap_GSD_2::dump(int i_step, const TSpins& spins, bool flag_out_pos) {
     if (need_export(i_step)) {
       int nframes;
       if (is_root()) {
@@ -149,7 +149,7 @@ namespace io {
       spins.get_theta(theta);
 
       float* pos = nullptr;
-      if (nframes == 0) {
+      if (nframes == 0 || flag_out_pos) {
         if (is_root()) {
           pos = new float[n_gl * 3];
         }
@@ -161,7 +161,7 @@ namespace io {
         gsd_write_chunk(handle_, "configuration/step", GSD_TYPE_UINT64, 1, 1, 0, &step);
         gsd_write_chunk(handle_, "particles/N", GSD_TYPE_UINT32, 1, 1, 0, &n_gl);
         gsd_write_chunk(handle_, "particles/charge", GSD_TYPE_FLOAT, n_gl, 1, 0, theta);
-        if (nframes == 0) {
+        if (nframes == 0 || flag_out_pos) {
           gsd_write_chunk(handle_, "particles/position", GSD_TYPE_FLOAT, n_gl, 3, 0, pos);
         }
         gsd_end_frame(handle_);
