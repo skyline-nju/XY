@@ -20,6 +20,9 @@ public:
   template <typename UniFunc>
   void for_each_real_site(UniFunc func) const;
 
+  template <typename UniFunc>
+  void for_each_padded_site(UniFunc func) const;
+
   void scatter_fields(const double* gl_f, double* my_f) const;
 
   void gather_fields(double* gl_f, const double* my_f) const;
@@ -82,6 +85,24 @@ void SquareLatticePadded_2::for_each_real_site(UniFunc func) const {
     for (int col = real_beg_x_; col < real_end_x_; col++) {
       size_t idx = col + row * Lx_;
       func(idx);
+    }
+  }
+}
+
+template<typename UniFunc>
+void SquareLatticePadded_2::for_each_padded_site(UniFunc func) const {
+  if (real_beg_x_ > 0) {
+    for (int row = real_beg_y_; row < real_end_y_; row++) {
+      size_t row_Lx = row * Lx_;
+      func(row_Lx);
+      func(Lx_ - 1 + row_Lx);
+    }
+  }
+  if (real_beg_y_ > 0) {
+    size_t last_row_Lx = (Ly_ - 1) * Lx_;
+    for (int col = 0; col < Lx_; col++) {
+      func(col);
+      func(col + last_row_Lx);
     }
   }
 }

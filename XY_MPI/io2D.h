@@ -135,7 +135,11 @@ namespace io {
   template<typename TSpins>
   void Snap_GSD_2::dump(int i_step, const TSpins& spins) {
     if (need_export(i_step)) {
-      int nframes = gsd_get_nframes(handle_);
+      int nframes;
+      if (is_root()) {
+        nframes= gsd_get_nframes(handle_);
+      }
+      MPI_Bcast(&nframes, 1, MPI_INT, 0, comm_);
 
       size_t n_gl = spins.get_gl_n();
       float* theta = nullptr;
@@ -152,13 +156,12 @@ namespace io {
         spins.get_pos(pos);
       }
 
-
       uint64_t step = start_ + i_step;
       if (is_root()) {
         gsd_write_chunk(handle_, "configuration/step", GSD_TYPE_UINT64, 1, 1, 0, &step);
         gsd_write_chunk(handle_, "particles/N", GSD_TYPE_UINT32, 1, 1, 0, &n_gl);
         gsd_write_chunk(handle_, "particles/charge", GSD_TYPE_FLOAT, n_gl, 1, 0, theta);
-        if (pos) {
+        if (nframes == 0) {
           gsd_write_chunk(handle_, "particles/position", GSD_TYPE_FLOAT, n_gl, 3, 0, pos);
         }
         gsd_end_frame(handle_);
@@ -166,6 +169,7 @@ namespace io {
         delete[] theta;
         delete[] pos;
       }
+      MPI_Barrier(comm_);
 
     }
   }

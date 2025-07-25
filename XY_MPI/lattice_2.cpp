@@ -80,7 +80,8 @@ void SquareLatticePadded_2::scatter_fields(const double* gl_f, double* my_f) con
 
 void SquareLatticePadded_2::gather_fields(double* gl_f, const double* my_f) const {
   int root = 0;
+  auto comm = get_communicator();
   int real_beg = get_idx(real_beg_x_, real_beg_y_);
   MPI_Gatherv(&my_f[real_beg], 1, my_block_type_,
-    gl_f, counts_, displs_, gl_block_type_, root, get_communicator());
+              gl_f, counts_, displs_, gl_block_type_, root, comm);
 }

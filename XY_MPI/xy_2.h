@@ -64,9 +64,9 @@ protected:
 
 template<typename TLattice>
 XY_2<TLattice>::XY_2(int gl_Lx, int gl_Ly,
-  int proc_nx, int proc_ny,
-  MPI_Comm group_comm,
-  double T, double h, double J)
+                     int proc_nx, int proc_ny,
+                     MPI_Comm group_comm,
+                     double T, double h, double J)
   : lat_(gl_Lx, gl_Ly, proc_nx, proc_ny, group_comm), N_(lat_.get_n()), h_(h) {
   gl_N_ = size_t(gl_Lx) * size_t(gl_Ly);
   J_h_ = h * J;
@@ -131,19 +131,20 @@ void XY_2<TLattice>::update_tau() {
 template<typename TLattice>
 template<typename TRan>
 void XY_2<TLattice>::update_theta(TRan& myran, const double* omega) {
-  if (omega == nullptr) {
-    for (size_t i = 0; i < N_; i++) {
-      theta_[i] += J_h_ * tau_[i] + sqrt_24_T_h_ * (myran.doub() - 0.5);
-      tangle_theta(theta_[i]);
-      tau_[i] = 0.;
+  auto updating = [this, &myran, omega](size_t i) {
+    this->theta_[i] += this->J_h_ * this->tau_[i] + this->sqrt_24_T_h_ * (myran.doub() - 0.5);
+    if (omega) {
+      this->theta_[i] += omega[i] * this->h_;
     }
-  } else {
-    for (size_t i = 0; i < N_; i++) {
-      theta_[i] += omega[i] * h_ + J_h_ * tau_[i] + sqrt_24_T_h_ * (myran.doub() - 0.5);
-      tangle_theta(theta_[i]);
-      tau_[i] = 0.;
-    }
-  }
+    tangle_theta(this->theta_[i]);
+    this->tau_[i] = 0.;
+  };
+  lat_.for_each_real_site(updating);
+
+  auto set_zero = [this](size_t i) {
+    this->tau_[i] = 0.;
+  };
+  lat_.for_each_padded_site(set_zero);
 }
 
 
@@ -222,7 +223,7 @@ void XY_2<TLattice>::get_pos(TFloat* pos_gl, const double* omega) const {
         TFloat x = col + 0.5 - ncols / 2.;
         pos_gl[3 * idx] = x;
         pos_gl[3 * idx + 1] = y;
-        pos_gl[3 * idx + 2] = float(omega_gl[idx]);
+        pos_gl[3 * idx + 2] = omega_gl[idx];
       }
     }
     delete[] omega_gl;
