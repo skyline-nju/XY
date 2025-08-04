@@ -4,6 +4,7 @@ from gsd import fl
 import os
 import glob
 import sys
+import gc
 
 
 def detect_defects(theta):
@@ -101,12 +102,12 @@ def show_defects(L, sigma=None, T=None, seed=None, fname=None, beg_frame=None, s
             except KeyError:
                 t = 0
             x, y, charge = detect_defects_fast(theta)
+            # print(x, y, charge)
 
             fig, ax = plt.subplots(1, 1, figsize=figsize, constrained_layout=True)
             theta[theta < 0] += np.pi * 2
             im = ax.imshow(theta, cmap="hsv", origin="lower", vmin=0, vmax=2 * np.pi, extent=extent)
 
-            # print(x, y, charge)
             for j in range(charge.size):
                 if charge[j] == 1:
                     mk = "ko"
@@ -121,7 +122,7 @@ def show_defects(L, sigma=None, T=None, seed=None, fname=None, beg_frame=None, s
             else:
                 n_tot = n_plus = n_mins = 0
             ax.set_title(r"Defect number= %d with $n_{+1}=%d, n_{-1}=%g, t=%g$" % (n_tot, n_plus, n_mins, t), fontsize="xx-large")
-            plt.colorbar(im)
+            fig.colorbar(im)
 
             if savefig:
                 if L >= 4096:
@@ -131,10 +132,15 @@ def show_defects(L, sigma=None, T=None, seed=None, fname=None, beg_frame=None, s
                 plt.savefig(f"{outdir}/{i_frame:06d}{fmt}", dpi=dpi)
             else:
                 plt.show()
+            plt.clf()
             plt.close()
+            del theta
+            gc.collect()
 
     
 def update_imgs(L):
+    import matplotlib
+    matplotlib.use("Agg")
     folder = f"/mnt/sda/LatticeXY/KM/L{L:d}"
     pat = f"{folder}/*.gsd"
     files = glob.glob(pat)
@@ -143,4 +149,4 @@ def update_imgs(L):
         show_defects(L, fname=f, beg_frame=None, savefig=True, fmt=".jpg")
 
 if __name__ == "__main__":
-    update_imgs(L=4096)
+    update_imgs(L=2048)
